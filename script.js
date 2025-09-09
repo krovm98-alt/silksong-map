@@ -1,8 +1,6 @@
-// Размеры изображения карты
-const mapWidth = 3000; // px
-const mapHeight = 2000; // px
+const mapWidth = 3000;
+const mapHeight = 2000;
 
-// Создаем карту с простыми координатами
 const map = L.map('map', {
   crs: L.CRS.Simple,
   minZoom: -2,
@@ -14,8 +12,28 @@ const bounds = [[0, 0], [mapHeight, mapWidth]];
 const image = L.imageOverlay('silksong-map.jpg', bounds).addTo(map);
 map.fitBounds(bounds);
 
-// При клике на карту — добавляем маркер
-map.on('click', function(e) {
+// Загружаем метки из localStorage
+const savedMarkers = JSON.parse(localStorage.getItem('silksongMarkers')) || [];
+
+savedMarkers.forEach(({ lat, lng, text }) => {
+  const marker = L.marker([lat, lng]).addTo(map);
+  marker.bindPopup(text);
+});
+
+// Добавление маркера по клику
+map.on('click', function (e) {
+  const text = prompt('Введите название метки:');
+  if (!text) return;
+
   const marker = L.marker(e.latlng).addTo(map);
-  marker.bindPopup(`Метка в [${e.latlng.lat.toFixed(2)}, ${e.latlng.lng.toFixed(2)}]`).openPopup();
+  marker.bindPopup(text).openPopup();
+
+  // Сохраняем маркер
+  savedMarkers.push({
+    lat: e.latlng.lat,
+    lng: e.latlng.lng,
+    text
+  });
+
+  localStorage.setItem('silksongMarkers', JSON.stringify(savedMarkers));
 });
